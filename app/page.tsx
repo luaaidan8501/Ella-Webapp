@@ -25,7 +25,7 @@ const formatDateLabel = (iso: string) => {
 };
 
 const SetupPanel = ({ sessionId }: { sessionId: string }) => {
-  const { state, createReservation, updateReservation, deleteReservation, updateTables } = useService();
+  const { state, createReservation, updateReservation, deleteReservation, updateTables, updateSeat } = useService();
 
   const nextWednesday = useMemo(() => getNextWednesday(), []);
   const [guestName, setGuestName] = useState("");
@@ -239,7 +239,11 @@ const SetupPanel = ({ sessionId }: { sessionId: string }) => {
             <TableVisualizer reservation={selectedReservation} table={selectedTable} statuses={state?.statuses ?? []} />
             <div className="grid grid-cols-1 gap-3 max-h-[45vh] overflow-auto subtle-scroll">
               {selectedReservation.seats.map((seat) => (
-                <SeatTile key={seat.id} seat={seat} onUpdate={() => {}} readOnly />
+                <SeatTile
+                  key={seat.id}
+                  seat={seat}
+                  onUpdate={(updatedSeat) => updateSeat({ reservationId: selectedReservation.id, seat: updatedSeat })}
+                />
               ))}
             </div>
           </div>
