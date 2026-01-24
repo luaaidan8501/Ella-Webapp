@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: radial-gradient(circle at top left, rgba(176, 138, 62, 0.18), transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(122, 15, 38, 0.22), transparent 45%),
+    #0d1117;
+}
+
+.card {
+  @apply rounded-2xl bg-white/5 border border-white/10 shadow-soft;
+}
+
+.glow {
+  box-shadow: 0 0 0 1px rgba(176, 138, 62, 0.2), 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.subtle-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.subtle-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
