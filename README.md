@@ -18,6 +18,7 @@ Open:
 - **Next.js App Router** for UI routes, **pages/api/socket** for Socket.IO server.
 - **In-memory store** singleton in `lib/store.ts` holds reservations, tables, service statuses, and timeline events.
 - **Session aware** store manager keeps separate state per session (`live`, `training`, or custom string).
+- **Persistence (Supabase/Postgres)** via Prisma stores a JSON snapshot per session.
 - **Socket.IO** broadcasts all updates: reservation changes, table assignment, seat updates, status updates, and timeline events.
 - **Optimistic UI** in clients for seat/status updates with server reconciliation via versioned updates.
 
@@ -41,3 +42,21 @@ Open:
 - Conflict resolution with per-entity versioning and server-side validation
 - Offline support + reconnection replay
 - Audit trail export and service analytics
+
+## Supabase persistence setup
+1) Create a Supabase project and grab the Postgres connection string.
+2) Create `.env.local` with:
+
+```bash
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/postgres"
+```
+
+3) Install deps and push schema:
+
+```bash
+npm install
+npm run prisma:generate
+npm run prisma:push
+```
+
+4) Deploy (Vercel): add `DATABASE_URL` in Vercel environment settings.

@@ -29,50 +29,60 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
       const sessionId = typeof socket.handshake.query.session === "string" ? socket.handshake.query.session : "live";
       socket.join(sessionId);
       const store = serviceStoreManager.getStore(sessionId);
-      socket.emit("state", store.getSnapshot());
+      store.ensureHydrated().then(() => {
+        socket.emit("state", store.getSnapshot());
+      });
 
-      socket.on("create_reservation", (payload) => {
+      socket.on("create_reservation", async (payload) => {
+        await store.ensureHydrated();
         const result = store.createReservation(payload);
         io.to(sessionId).emit("reservation_created", result.reservation, result.version);
       });
 
-      socket.on("update_reservation", (payload) => {
+      socket.on("update_reservation", async (payload) => {
+        await store.ensureHydrated();
         const result = store.updateReservation(payload);
         if (!result) return;
         io.to(sessionId).emit("reservation_updated", result.reservation, result.version);
       });
 
-      socket.on("update_tables", (payload) => {
+      socket.on("update_tables", async (payload) => {
+        await store.ensureHydrated();
         const result = store.updateTables(payload);
         if (!result) return;
         io.to(sessionId).emit("tables_updated", result.tables, result.version);
       });
 
-      socket.on("delete_reservation", (payload) => {
+      socket.on("delete_reservation", async (payload) => {
+        await store.ensureHydrated();
         const result = store.deleteReservation(payload);
         if (!result) return;
         io.to(sessionId).emit("reservation_removed", result.id, result.version);
       });
 
-      socket.on("assign_table", (payload) => {
+      socket.on("assign_table", async (payload) => {
+        await store.ensureHydrated();
         const result = store.assignTable(payload);
         if (!result) return;
         io.to(sessionId).emit("table_assigned", result.reservation, result.version);
       });
 
-      socket.on("update_seat", (payload) => {
+      socket.on("update_seat", async (payload) => {
+        await store.ensureHydrated();
         const result = store.updateSeat(payload);
         if (!result) return;
         io.to(sessionId).emit("seat_updated", result.reservation, result.version);
       });
 
-      socket.on("update_seat_count", (payload) => {
+      socket.on("update_seat_count", async (payload) => {
+        await store.ensureHydrated();
         const result = store.setSeatCount(payload);
         if (!result) return;
         io.to(sessionId).emit("seat_updated", result.reservation, result.version);
       });
 
-      socket.on("update_status", (payload) => {
+      socket.on("update_status", async (payload) => {
+        await store.ensureHydrated();
         const incoming = payload.status;
         const status: ServiceStatus = {
           ...incoming,
@@ -89,7 +99,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
         }, result.version);
       });
 
-      socket.on("reset_service", (payload) => {
+      socket.on("reset_service", async (payload) => {
+        await store.ensureHydrated();
         if (payload.requestedBy !== "FOH" && payload.requestedBy !== "BOH") return;
         serviceStoreManager.resetStore(sessionId);
         io.to(sessionId).emit("reset_done", store.getSnapshot());

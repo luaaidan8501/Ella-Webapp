@@ -9,6 +9,7 @@ import type {
   Role,
   TimelineEvent
 } from "./types";
+import { loadSessionState, saveSessionState } from "./persistence";
 
 const COURSE_COUNT = 6;
 const MAX_SEATS = 6;
@@ -49,8 +50,12 @@ export class ServiceStore {
   private tables = new Map<string, Table>();
   private statuses = new Map<string, ServiceStatus>();
   private timeline = new Map<string, TimelineEvent[]>();
+  private hydrated = false;
+  private hydrating: Promise<void> | null = null;
+  private sessionId: ServiceSessionId;
 
-  constructor() {
+  constructor(sessionId: ServiceSessionId) {
+    this.sessionId = sessionId;
     this.reset();
   }
 
@@ -95,6 +100,43 @@ export class ServiceStore {
     buildStatusSeed(tables).forEach((status) => {
       this.statuses.set(this.statusKey(status.tableId, status.courseIndex, status.drinkIndex), status);
     });
+    void this.persist();
+  }
+
+  private hydrateFromState(state: ServiceState) {
+    this.version = state.version;
+    this.reservations = new Map(state.reservations.map((reservation) => [reservation.id, reservation]));
+    this.tables = new Map(state.tables.map((table) => [table.id, table]));
+    this.statuses = new Map(
+      state.statuses.map((status) => [
+        this.statusKey(status.tableId, status.courseIndex, status.drinkIndex),
+        status
+      ])
+    );
+    this.timeline = new Map();
+    state.timeline.forEach((event) => {
+      if (!this.timeline.has(event.tableId)) {
+        this.timeline.set(event.tableId, []);
+      }
+      this.timeline.get(event.tableId)?.push(event);
+    });
+  }
+
+  async ensureHydrated() {
+    if (this.hydrated) return;
+    if (this.hydrating) return this.hydrating;
+    this.hydrating = (async () => {
+      const state = await loadSessionState(this.sessionId);
+      if (state) {
+        this.hydrateFromState(state);
+      }
+      this.hydrated = true;
+    })();
+    return this.hydrating;
+  }
+
+  private async persist() {
+    await saveSessionState(this.sessionId, this.getSnapshot());
   }
 
   updateTables(payload: { tables: Table[] }) {
@@ -118,7 +160,9 @@ export class ServiceStore {
     this.reservations.clear();
     reservations.forEach((reservation) => this.reservations.set(reservation.id, reservation));
 
-    return { tables: Array.from(this.tables.values()), version: this.nextVersion() };
+    const result = { tables: Array.from(this.tables.values()), version: this.nextVersion() };
+    void this.persist();
+    return result;
   }
 
   createReservation(payload: {
@@ -141,6 +185,7 @@ export class ServiceStore {
       seats: Array.from({ length: partySize }, (_, index) => createSeat(index + 1))
     };
     this.reservations.set(reservation.id, reservation);
+    void this.persist();
     return { reservation, version: this.nextVersion() };
   }
 
@@ -166,12 +211,14 @@ export class ServiceStore {
     if (payload.excludedCourses !== undefined) reservation.excludedCourses = payload.excludedCourses;
 
     this.reservations.set(reservation.id, reservation);
+    void this.persist();
     return { reservation, version: this.nextVersion() };
   }
 
   deleteReservation(payload: { id: string }) {
     const existed = this.reservations.delete(payload.id);
     if (!existed) return null;
+    void this.persist();
     return { id: payload.id, version: this.nextVersion() };
   }
 
@@ -187,6 +234,7 @@ export class ServiceStore {
       this.ensureTimeline(payload.tableId);
     }
     this.reservations.set(reservation.id, reservation);
+    void this.persist();
     return { reservation, version: this.nextVersion() };
   }
 
@@ -203,6 +251,7 @@ export class ServiceStore {
     }
     reservation.seats = reservation.seats.map((seat, index) => ({ ...seat, seatNumber: index + 1 }));
     this.reservations.set(reservation.id, reservation);
+    void this.persist();
     return { reservation, version: this.nextVersion() };
   }
 
@@ -213,6 +262,7 @@ export class ServiceStore {
     if (seatIndex === -1) return null;
     reservation.seats[seatIndex] = payload.seat;
     this.reservations.set(reservation.id, reservation);
+    void this.persist();
     return { reservation, version: this.nextVersion() };
   }
 
@@ -229,6 +279,7 @@ export class ServiceStore {
       createdAt: status.updatedAt
     };
     this.timeline.get(status.tableId)?.unshift(event);
+    void this.persist();
     return { status, version: this.nextVersion(), event };
   }
 
@@ -254,7 +305,7 @@ export class ServiceStore {
   }
 }
 
-export const serviceStore = globalThis.__serviceStore ?? new ServiceStore();
+export const serviceStore = globalThis.__serviceStore ?? new ServiceStore("live");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).__serviceStore = serviceStore;
@@ -266,7 +317,7 @@ export class ServiceStoreManager {
 
   getStore(sessionId: ServiceSessionId) {
     if (!this.stores.has(sessionId)) {
-      this.stores.set(sessionId, new ServiceStore());
+      this.stores.set(sessionId, new ServiceStore(sessionId));
     }
     return this.stores.get(sessionId)!;
   }
