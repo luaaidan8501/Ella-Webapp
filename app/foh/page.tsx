@@ -240,6 +240,11 @@ const FOHScreen = () => {
                       </option>
                     ))}
                   </select>
+                  {tables.length === 0 && (
+                    <p className="text-xs text-garnet mt-2">
+                      No tables configured yet. Use the setup page to add tables.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table shape</label>

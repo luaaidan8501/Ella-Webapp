@@ -15,20 +15,24 @@ export const SeatTile = ({
   seat,
   onUpdate,
   onPositionChange,
-  maxPositions = 6
+  maxPositions = 6,
+  readOnly = false
 }: {
   seat: Seat;
   onUpdate: (seat: Seat) => void;
   onPositionChange?: (position: number) => void;
   maxPositions?: number;
+  readOnly?: boolean;
 }) => {
   const handleLateToggle = () => {
+    if (readOnly) return;
     const index = lateCycle.indexOf(seat.lateStatus);
     const next = lateCycle[(index + 1) % lateCycle.length];
     onUpdate({ ...seat, lateStatus: next });
   };
 
   const handleDrinkToggle = () => {
+    if (readOnly) return;
     const index = drinkCycle.indexOf(seat.drinkPreference);
     const next = drinkCycle[(index + 1) % drinkCycle.length];
     onUpdate({ ...seat, drinkPreference: next });
@@ -41,7 +45,8 @@ export const SeatTile = ({
         <button
           type="button"
           onClick={handleLateToggle}
-          className={`text-xs px-3 py-1 rounded-full border border-white/20 shadow-sm hover:border-white/40 ${badgeForLate(seat.lateStatus)}`}
+          disabled={readOnly}
+          className={`text-xs px-3 py-1 rounded-full border border-white/20 shadow-sm hover:border-white/40 disabled:opacity-60 disabled:cursor-not-allowed ${badgeForLate(seat.lateStatus)}`}
         >
           {seat.lateStatus}
         </button>
@@ -50,18 +55,27 @@ export const SeatTile = ({
         <label className="text-[10px] uppercase tracking-[0.2em] text-white/40">Allergy</label>
         <input
           value={seat.allergyNotes}
-          onChange={(event) => onUpdate({ ...seat, allergyNotes: event.target.value })}
+          onChange={(event) => {
+            if (readOnly) return;
+            onUpdate({ ...seat, allergyNotes: event.target.value });
+          }}
+          readOnly={readOnly}
           placeholder="None"
-          className="mt-1 w-full bg-black/40 border border-white/10 rounded-md px-2 py-1 text-sm"
+          className="mt-1 w-full bg-black/40 border border-white/10 rounded-md px-2 py-1 text-sm disabled:opacity-60"
         />
       </div>
       <div className="mt-3 flex items-center justify-between">
         <span className="text-[10px] uppercase tracking-[0.2em] text-white/40">Drink</span>
-        <button type="button" onClick={handleDrinkToggle} className="text-xs px-2 py-1 rounded-full border border-white/10">
+        <button
+          type="button"
+          onClick={handleDrinkToggle}
+          disabled={readOnly}
+          className="text-xs px-2 py-1 rounded-full border border-white/10 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
           {seat.drinkPreference}
         </button>
       </div>
-      {onPositionChange && (
+      {onPositionChange && !readOnly && (
         <div className="mt-3">
           <label className="text-[10px] uppercase tracking-[0.2em] text-white/40">Position</label>
           <select

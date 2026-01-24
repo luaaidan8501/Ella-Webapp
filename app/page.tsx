@@ -239,7 +239,7 @@ const SetupPanel = ({ sessionId }: { sessionId: string }) => {
             <TableVisualizer reservation={selectedReservation} table={selectedTable} statuses={state?.statuses ?? []} />
             <div className="grid grid-cols-1 gap-3 max-h-[45vh] overflow-auto subtle-scroll">
               {selectedReservation.seats.map((seat) => (
-                <SeatTile key={seat.id} seat={seat} onUpdate={() => {}} />
+                <SeatTile key={seat.id} seat={seat} onUpdate={() => {}} readOnly />
               ))}
             </div>
           </div>
