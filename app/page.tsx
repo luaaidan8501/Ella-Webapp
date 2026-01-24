@@ -7,6 +7,7 @@ import { ServiceProvider, useService } from "../components/ServiceProvider";
 import { TableVisualizer } from "../components/TableVisualizer";
 import { SeatTile } from "../components/SeatTile";
 import { v4 as uuidv4 } from "uuid";
+import type { Reservation } from "../lib/types";
 
 const isWednesday = (date: Date) => date.getDay() === 3;
 
