@@ -25,7 +25,7 @@ const formatDateLabel = (iso: string) => {
 };
 
 const SetupPanel = ({ sessionId }: { sessionId: string }) => {
-  const { state, createReservation, updateReservation, deleteReservation, updateTables, updateSeat } = useService();
+  const { state, createReservation, updateReservation, deleteReservation, updateTables, updateSeat, assignTable } = useService();
 
   const nextWednesday = useMemo(() => getNextWednesday(), []);
   const [guestName, setGuestName] = useState("");
@@ -236,7 +236,29 @@ const SetupPanel = ({ sessionId }: { sessionId: string }) => {
         <div className="mt-6 border-t border-white/10 pt-4">
           <h3 className="text-sm uppercase tracking-[0.2em] text-white/50">Seat plan preview</h3>
           <div className="mt-3 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4">
-            <TableVisualizer reservation={selectedReservation} table={selectedTable} statuses={state?.statuses ?? []} />
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table assignment</label>
+                <select
+                  value={selectedReservation.tableId ?? ""}
+                  onChange={(event) => assignTable({ reservationId: selectedReservation.id, tableId: event.target.value || null })}
+                  className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+                >
+                  <option value="">Unassigned</option>
+                  {state?.tables.map((table) => (
+                    <option key={table.id} value={table.id}>
+                      {table.name} · cap {table.capacity}
+                    </option>
+                  ))}
+                </select>
+                {state?.tables.length === 0 && (
+                  <p className="text-xs text-garnet mt-2">
+                    No tables configured yet. Add tables below to assign.
+                  </p>
+                )}
+              </div>
+              <TableVisualizer reservation={selectedReservation} table={selectedTable} statuses={state?.statuses ?? []} />
+            </div>
             <div className="grid grid-cols-1 gap-3 max-h-[45vh] overflow-auto subtle-scroll">
               {selectedReservation.seats.map((seat) => (
                 <SeatTile
