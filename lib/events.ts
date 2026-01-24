@@ -17,6 +17,7 @@ export type ReservationUpdatePayload = {
   notes?: string;
   tableShape?: "round" | "oval" | "banquette" | "counter";
   excludedCourses?: number[];
+  order?: number;
 };
 
 export type ReservationDeletePayload = {

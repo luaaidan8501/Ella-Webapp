@@ -173,6 +173,7 @@ export class ServiceStore {
     excludedCourses: number[];
   }) {
     const partySize = Math.max(1, Math.min(payload.partySize, MAX_SEATS));
+    const nextOrder = Math.max(0, ...Array.from(this.reservations.values()).map((item) => item.order ?? 0)) + 1;
     const reservation: Reservation = {
       id: uuidv4(),
       guestName: payload.guestName.trim() || "Guest",
@@ -182,6 +183,7 @@ export class ServiceStore {
       tableId: null,
       tableShape: "round",
       excludedCourses: payload.excludedCourses ?? [],
+      order: nextOrder,
       seats: Array.from({ length: partySize }, (_, index) => createSeat(index + 1))
     };
     this.reservations.set(reservation.id, reservation);
@@ -197,6 +199,7 @@ export class ServiceStore {
     notes?: string;
     tableShape?: "round" | "oval" | "banquette" | "counter";
     excludedCourses?: number[];
+    order?: number;
   }) {
     const reservation = this.reservations.get(payload.id);
     if (!reservation) return null;
@@ -209,6 +212,7 @@ export class ServiceStore {
     if (payload.notes !== undefined) reservation.notes = payload.notes;
     if (payload.tableShape !== undefined) reservation.tableShape = payload.tableShape;
     if (payload.excludedCourses !== undefined) reservation.excludedCourses = payload.excludedCourses;
+    if (payload.order !== undefined) reservation.order = payload.order;
 
     this.reservations.set(reservation.id, reservation);
     void this.persist();

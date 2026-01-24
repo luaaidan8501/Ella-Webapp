@@ -20,6 +20,7 @@ export type Reservation = {
   tableId: string | null;
   tableShape: "round" | "oval" | "banquette" | "counter";
   excludedCourses: number[];
+  order: number;
   seats: Seat[];
 };
 

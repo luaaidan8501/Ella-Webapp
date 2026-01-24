@@ -28,7 +28,7 @@ const FOHScreen = () => {
 
   const reservations = useMemo(() => {
     if (!state) return [];
-    return [...state.reservations].sort((a, b) => a.guestName.localeCompare(b.guestName));
+    return [...state.reservations].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }, [state]);
 
   const tables = state?.tables ?? [];
@@ -156,19 +156,38 @@ const FOHScreen = () => {
             <span className="text-xs text-white/60">{reservations.length} active</span>
           </div>
           <div className="space-y-2 overflow-auto subtle-scroll max-h-[70vh]">
-            {reservations.map((reservation) => {
+            {reservations.map((reservation, index) => {
               const table = tables.find((item) => item.id === reservation.tableId);
               const isSelected = reservation.id === selectedReservationId;
               return (
                 <button
                   key={reservation.id}
                   type="button"
+                  draggable
+                  onDragStart={(event) => event.dataTransfer.setData("text/plain", reservation.id)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    const draggedId = event.dataTransfer.getData("text/plain");
+                    if (!draggedId || draggedId === reservation.id) return;
+                    const newOrder = [...reservations];
+                    const fromIndex = newOrder.findIndex((item) => item.id === draggedId);
+                    const toIndex = newOrder.findIndex((item) => item.id === reservation.id);
+                    if (fromIndex === -1 || toIndex === -1) return;
+                    const [moved] = newOrder.splice(fromIndex, 1);
+                    newOrder.splice(toIndex, 0, moved);
+                    newOrder.forEach((item, orderIndex) => {
+                      if (item.order !== orderIndex + 1) {
+                        updateReservation({ id: item.id, order: orderIndex + 1 });
+                      }
+                    });
+                  }}
                   onClick={() => setSelectedReservationId(reservation.id)}
                   className={`w-full text-left rounded-xl border p-3 transition ${isSelected ? "border-brass bg-white/10" : "border-white/10 hover:border-white/40"}`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{reservation.guestName}</p>
+                      <p className="font-medium">{index + 1}. {reservation.guestName}</p>
                       <p className="text-xs text-white/60">Party {reservation.partySize} · {reservation.seats.length} seats</p>
                     </div>
                     <span className="text-xs text-white/60">{table ? table.name : "Unassigned"}</span>

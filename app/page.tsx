@@ -47,9 +47,7 @@ const SetupPanel = ({ sessionId }: { sessionId: string }) => {
 
   const reservationsByDate = useMemo(() => {
     if (!state) return [] as Array<{ date: string; items: Reservation[] }>;
-    const sorted = [...state.reservations].sort(
-      (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
-    );
+    const sorted = [...state.reservations].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     const grouped = new Map<string, typeof state.reservations>();
     sorted.forEach((reservation) => {
       const dateKey = reservation.datetime.slice(0, 10);

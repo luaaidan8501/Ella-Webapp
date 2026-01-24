@@ -20,6 +20,7 @@ export const FiringBoardAll = ({
 }) => {
   const activeTables = reservations
     .filter((reservation) => reservation.tableId)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     .map((reservation) => tables.find((table) => table.id === reservation.tableId))
     .filter((table): table is Table => Boolean(table));
 
