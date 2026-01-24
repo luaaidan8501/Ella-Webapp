@@ -45,7 +45,7 @@ const SetupPanel = ({ sessionId }: { sessionId: string }) => {
   const [editExcludedCourses, setEditExcludedCourses] = useState<number[]>([]);
 
   const reservationsByDate = useMemo(() => {
-    if (!state) return [] as Array<{ date: string; items: typeof state.reservations }>;
+    if (!state) return [] as Array<{ date: string; items: Reservation[] }>;
     const sorted = [...state.reservations].sort(
       (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
     );
