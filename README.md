@@ -15,7 +15,7 @@ Open:
 - Training session: `http://localhost:3000/foh?session=training`
 
 ## Architecture
-- **Next.js App Router** for UI routes, **pages/api/socket** for Socket.IO server.
+- **Next.js App Router** for UI routes, **custom Node server** in `server.ts` for Socket.IO in production.
 - **In-memory store** singleton in `lib/store.ts` holds reservations, tables, service statuses, and timeline events.
 - **Session aware** store manager keeps separate state per session (`live`, `training`, or custom string).
 - **Persistence (Supabase/Postgres)** via Prisma stores a JSON snapshot per session.
@@ -31,7 +31,8 @@ Open:
 
 ## Key files
 - `lib/store.ts` - source-of-truth state + seed data
-- `pages/api/socket.ts` - Socket.IO event router
+- `server.ts` - Socket.IO server for production
+- `pages/api/socket.ts` - Socket.IO event router for `npm run dev`
 - `components/ServiceProvider.tsx` - client socket bridge
 - `app/foh/page.tsx` - FOH workflow
 - `app/boh/page.tsx` - BOH workflow
@@ -60,3 +61,9 @@ npm run prisma:push
 ```
 
 4) Deploy (Vercel): add `DATABASE_URL` in Vercel environment settings.
+
+## Production start (Render/Node)
+```bash
+npm run build
+npm run start
+```
