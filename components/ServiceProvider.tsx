@@ -142,11 +142,11 @@ export const ServiceProvider = ({
     if (stored) {
       setSoundEnabled(stored === "true");
     }
-    fetch("/api/socket");
     const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io({
       path: "/api/socket",
       addTrailingSlash: false,
-      query: { session: sessionId }
+      query: { session: sessionId },
+      transports: ["websocket"]
     });
     socketRef.current = socket;
 
