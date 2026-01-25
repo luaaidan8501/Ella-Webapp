@@ -8,7 +8,8 @@ const statusStyles: Record<ServiceStatusType, string> = {
 };
 
 export const StatusBadge = ({ status }: { status: ServiceStatusType }) => {
+  const label = status === "PLATE_UP" ? "FIRE" : status.replace("_", " ");
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-mono tracking-wide ${statusStyles[status]}`}>{status.replace("_", " ")}</span>
+    <span className={`px-2 py-0.5 rounded-full text-xs font-mono tracking-wide ${statusStyles[status]}`}>{label}</span>
   );
 };

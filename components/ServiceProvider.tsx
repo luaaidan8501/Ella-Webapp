@@ -76,6 +76,8 @@ type ServiceContextValue = {
   connected: boolean;
   role: Role;
   sessionId: string;
+  soundEnabled: boolean;
+  toggleSound: () => void;
   createReservation: (payload: ReservationCreatePayload) => void;
   updateReservation: (payload: ReservationUpdatePayload) => void;
   deleteReservation: (payload: ReservationDeletePayload) => void;
@@ -108,9 +110,38 @@ export const ServiceProvider = ({
 }) => {
   const [state, setState] = useState<ServiceState | null>(null);
   const [connected, setConnected] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+  const audioRef = useRef<AudioContext | null>(null);
+
+  const playStatusSound = (status: ServiceStatus["status"]) => {
+    if (!audioRef.current) return;
+    const context = audioRef.current;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const frequencyMap: Record<ServiceStatus["status"], number> = {
+      STANDBY: 220,
+      PLATE_UP: 330,
+      PICK_UP: 440,
+      SERVED: 520
+    };
+    const now = context.currentTime;
+    oscillator.frequency.value = frequencyMap[status];
+    oscillator.type = "sine";
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.28);
+  };
 
   useEffect(() => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem("soundEnabled") : null;
+    if (stored) {
+      setSoundEnabled(stored === "true");
+    }
     fetch("/api/socket");
     const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io({
       path: "/api/socket",
@@ -152,6 +183,9 @@ export const ServiceProvider = ({
 
     socket.on("status_updated", (status, version) => {
       setState((prev) => (prev ? { ...applyStatusUpdate(prev, status), version } : prev));
+      if (soundEnabled) {
+        playStatusSound(status.status);
+      }
     });
 
     socket.on("timeline_event", (event, version) => {
@@ -167,7 +201,16 @@ export const ServiceProvider = ({
     return () => {
       socket.disconnect();
     };
-  }, [sessionId]);
+  }, [sessionId, soundEnabled]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("soundEnabled", String(soundEnabled));
+    if (soundEnabled && !audioRef.current) {
+      audioRef.current = new AudioContext();
+      void audioRef.current.resume();
+    }
+  }, [soundEnabled]);
 
   const actions = useMemo(() => {
     return {
@@ -218,9 +261,11 @@ export const ServiceProvider = ({
       connected,
       role,
       sessionId,
+      soundEnabled,
+      toggleSound: () => setSoundEnabled((prev) => !prev),
       ...actions
     }),
-    [state, connected, role, sessionId, actions]
+    [state, connected, role, sessionId, soundEnabled, actions]
   );
 
   return <ServiceContext.Provider value={value}>{children}</ServiceContext.Provider>;

@@ -423,7 +423,7 @@ const SetupPanel = ({ sessionId }: { sessionId: string }) => {
           <h3 className="text-sm uppercase tracking-[0.2em] text-white/50">Tables</h3>
           <button
             type="button"
-            onClick={() => setTablesDraft((prev) => [...prev, { id: uuidv4(), name: "T", capacity: 2 }])}
+            onClick={() => setTablesDraft((prev) => [...prev, { id: uuidv4(), name: "T", capacity: 4 }])}
             className="text-xs px-3 py-2 rounded-full border border-white/10"
           >
             Add table

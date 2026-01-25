@@ -15,7 +15,7 @@ export type ReservationUpdatePayload = {
   partySize?: number;
   datetime?: string;
   notes?: string;
-  tableShape?: "round" | "oval" | "banquette" | "counter";
+  tableShape?: "square" | "round" | "oval" | "banquette" | "counter";
   excludedCourses?: number[];
   order?: number;
 };

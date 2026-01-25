@@ -9,6 +9,8 @@ export type Seat = {
   lateStatus: LateStatus;
   allergyNotes: string;
   drinkPreference: DrinkPreference;
+  excludedCourses: number[];
+  excludedDrinks: number[];
 };
 
 export type Reservation = {
@@ -18,7 +20,7 @@ export type Reservation = {
   datetime: string;
   notes: string;
   tableId: string | null;
-  tableShape: "round" | "oval" | "banquette" | "counter";
+  tableShape: "square" | "round" | "oval" | "banquette" | "counter";
   excludedCourses: number[];
   order: number;
   seats: Seat[];

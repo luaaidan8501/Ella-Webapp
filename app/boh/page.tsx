@@ -9,8 +9,9 @@ import { TableVisualizer } from "../../components/TableVisualizer";
 import { FiringBoard } from "../../components/FiringBoard";
 
 const BOHScreen = () => {
-  const { state, connected, updateStatus, updateSeat, sessionId } = useService();
+  const { state, connected, updateStatus, sessionId, soundEnabled, toggleSound } = useService();
   const [visualMode, setVisualMode] = useState(false);
+  const [overviewMode, setOverviewMode] = useState(false);
 
   const reservations = state?.reservations ?? [];
   const tables = state?.tables ?? [];
@@ -43,6 +44,20 @@ const BOHScreen = () => {
           </Link>
           <button
             type="button"
+            onClick={toggleSound}
+            className={`px-3 py-2 rounded-lg border ${soundEnabled ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
+          >
+            Sound {soundEnabled ? "on" : "off"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setOverviewMode((prev) => !prev)}
+            className={`px-3 py-2 rounded-lg border ${overviewMode ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
+          >
+            {overviewMode ? "All tables on" : "All tables off"}
+          </button>
+          <button
+            type="button"
             onClick={() => setVisualMode((prev) => !prev)}
             className={`px-3 py-2 rounded-lg border ${visualMode ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
           >
@@ -59,7 +74,18 @@ const BOHScreen = () => {
 
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-6">
         <section className="space-y-4">
-          {visualMode ? (
+          {overviewMode ? (
+            <FiringBoardAll
+              reservations={reservations}
+              tables={tables}
+              statuses={state.statuses}
+              timeline={state.timeline}
+              onUpdateStatus={(status) => updateStatus({ status })}
+              role="BOH"
+              className="grid gap-4 md:grid-cols-2"
+              showTableVisualization={visualMode}
+            />
+          ) : visualMode ? (
             <div className="grid gap-4">
               {assignedReservations.map((reservation) => {
                 const table = tables.find((item) => item.id === reservation.tableId);

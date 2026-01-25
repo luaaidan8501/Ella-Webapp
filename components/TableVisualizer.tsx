@@ -10,6 +10,7 @@ const badgeForLate = (status: Reservation["seats"][number]["lateStatus"]) => {
 };
 
 const shapeStyles: Record<Reservation["tableShape"], { radius: number; label: string; size: { w: number; h: number } }> = {
+  square: { radius: 10, label: "Square", size: { w: 120, h: 120 } },
   round: { radius: 999, label: "Round", size: { w: 120, h: 120 } },
   oval: { radius: 999, label: "Oval", size: { w: 170, h: 100 } },
   banquette: { radius: 28, label: "Banquette", size: { w: 180, h: 95 } },
@@ -32,7 +33,7 @@ export const TableVisualizer = ({
   const orderedSeats = [...reservation.seats].sort((a, b) => a.seatNumber - b.seatNumber);
   const radius = 92;
   const center = 120;
-  const shape = shapeStyles[reservation.tableShape ?? "round"];
+  const shape = shapeStyles[reservation.tableShape ?? "square"];
 
   const layoutArc = reservation.tableShape === "banquette" || reservation.tableShape === "counter";
   const startAngle = layoutArc ? Math.PI * 1.05 : -Math.PI / 2;
@@ -138,9 +139,17 @@ export const TableVisualizer = ({
                   {seat.lateStatus}
                 </span>
               </div>
-              <div className="mt-2 text-white/60">
+              <div className="mt-2 text-white/60 space-y-1">
                 <div>Allergy: {seat.allergyNotes.trim() ? seat.allergyNotes : "None"}</div>
-                <div>Drink: {seat.drinkPreference}</div>
+                <div>Drink pref: {seat.drinkPreference}</div>
+                <div>
+                  Skip: {(seat.excludedCourses?.length ?? 0) || (seat.excludedDrinks?.length ?? 0)
+                    ? [
+                        ...(seat.excludedCourses ?? []).map((course) => `C${course}`),
+                        ...(seat.excludedDrinks ?? []).map((drink) => `D${drink}`)
+                      ].join(", ")
+                    : "None"}
+                </div>
               </div>
             </div>
           ))}

@@ -12,6 +12,7 @@ import type {
 import { loadSessionState, saveSessionState } from "./persistence";
 
 const COURSE_COUNT = 6;
+const DRINK_COUNT = 2;
 const MAX_SEATS = 6;
 
 const statusCycle: ServiceStatusType[] = ["STANDBY", "PLATE_UP", "PICK_UP", "SERVED"];
@@ -21,7 +22,9 @@ const createSeat = (seatNumber: number): Seat => ({
   seatNumber,
   lateStatus: "on-time",
   allergyNotes: "",
-  drinkPreference: "none"
+  drinkPreference: "none",
+  excludedCourses: [],
+  excludedDrinks: []
 });
 
 const seedTables = (): Table[] => [];
@@ -35,6 +38,15 @@ const buildStatusSeed = (tables: Table[]): ServiceStatus[] => {
       statuses.push({
         tableId: table.id,
         courseIndex: i,
+        status: "STANDBY",
+        updatedBy: "FOH",
+        updatedAt: Date.now()
+      });
+    }
+    for (let i = 1; i <= DRINK_COUNT; i += 1) {
+      statuses.push({
+        tableId: table.id,
+        drinkIndex: i,
         status: "STANDBY",
         updatedBy: "FOH",
         updatedAt: Date.now()
@@ -145,7 +157,7 @@ export class ServiceStore {
       .map((table) => ({
         ...table,
         name: table.name.trim(),
-        capacity: Math.max(1, Math.min(12, table.capacity))
+        capacity: Math.max(1, Math.min(6, table.capacity))
       }));
     const tableIds = new Set(sanitized.map((table) => table.id));
     this.tables.clear();
@@ -181,7 +193,7 @@ export class ServiceStore {
       datetime: payload.datetime,
       notes: payload.notes ?? "",
       tableId: null,
-      tableShape: "round",
+      tableShape: "square",
       excludedCourses: payload.excludedCourses ?? [],
       order: nextOrder,
       seats: Array.from({ length: partySize }, (_, index) => createSeat(index + 1))
@@ -197,7 +209,7 @@ export class ServiceStore {
     partySize?: number;
     datetime?: string;
     notes?: string;
-    tableShape?: "round" | "oval" | "banquette" | "counter";
+    tableShape?: "square" | "round" | "oval" | "banquette" | "counter";
     excludedCourses?: number[];
     order?: number;
   }) {
@@ -275,10 +287,11 @@ export class ServiceStore {
     const key = this.statusKey(status.tableId, status.courseIndex, status.drinkIndex);
     this.statuses.set(key, status);
     this.ensureTimeline(status.tableId);
+    const statusLabel = status.status === "PLATE_UP" ? "FIRE" : status.status;
     const event: TimelineEvent = {
       id: uuidv4(),
       tableId: status.tableId,
-      message: `${status.courseIndex ? `Course ${status.courseIndex}` : `Drink ${status.drinkIndex}`} → ${status.status}`,
+      message: `${status.courseIndex ? `Course ${status.courseIndex}` : `Drink ${status.drinkIndex}`} → ${statusLabel}`,
       createdBy: status.updatedBy,
       createdAt: status.updatedAt
     };

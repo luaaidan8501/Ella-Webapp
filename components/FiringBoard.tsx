@@ -6,14 +6,8 @@ import { StatusBadge } from "./StatusBadge";
 
 const statusCycle: ServiceStatusType[] = ["STANDBY", "PLATE_UP", "PICK_UP", "SERVED"];
 
-const courseNames = [
-  "Bread",
-  "Salad & Spritz",
-  "Soup",
-  "Mains & Sour",
-  "Pre-Dessert",
-  "Dessert & Coffee"
-];
+const courseNames = ["Bread", "Salad", "Soup", "Mains", "Pre-Dessert", "Dessert & Coffee"];
+const drinkNames = ["Spritz", "Sour"];
 
 const formatTime = (timestamp: number) => {
   const date = new Date(timestamp);
@@ -114,6 +108,32 @@ export const FiringBoard = ({
                     <StatusBadge status={status} />
                   </div>
                   {isExcluded && <div className="mt-1 text-[10px] uppercase tracking-[0.2em]">Skip</div>}
+                  <div className="mt-2 text-[10px] text-white/50 uppercase tracking-[0.2em]">{meta}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-white/50">Drinks</p>
+          <div className="mt-2 grid grid-cols-2 gap-3">
+            {Array.from({ length: 2 }, (_, index) => {
+              const item = index + 1;
+              const key = `${table.id}::${item}`;
+              const current = statusMap.get(key);
+              const status = current?.status ?? "STANDBY";
+              const meta = current ? `${current.updatedBy} · ${formatTime(current.updatedAt)}` : "—";
+              return (
+                <button
+                  key={`drink-${item}`}
+                  type="button"
+                  onClick={() => handleAdvance("drink", item)}
+                  className="rounded-xl border border-white/10 p-3 hover:border-sage/70 transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">{drinkNames[item - 1]}</span>
+                    <StatusBadge status={status} />
+                  </div>
                   <div className="mt-2 text-[10px] text-white/50 uppercase tracking-[0.2em]">{meta}</div>
                 </button>
               );

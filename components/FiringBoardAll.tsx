@@ -2,6 +2,7 @@
 
 import type { Reservation, Role, ServiceStatus, Table, TimelineEvent } from "../lib/types";
 import { FiringBoard } from "./FiringBoard";
+import { TableVisualizer } from "./TableVisualizer";
 
 export const FiringBoardAll = ({
   reservations,
@@ -9,7 +10,9 @@ export const FiringBoardAll = ({
   statuses,
   timeline,
   onUpdateStatus,
-  role
+  role,
+  className,
+  showTableVisualization = false
 }: {
   reservations: Reservation[];
   tables: Table[];
@@ -17,6 +20,8 @@ export const FiringBoardAll = ({
   timeline: TimelineEvent[];
   onUpdateStatus: (status: ServiceStatus) => void;
   role: Role;
+  className?: string;
+  showTableVisualization?: boolean;
 }) => {
   const activeTables = reservations
     .filter((reservation) => reservation.tableId)
@@ -29,19 +34,26 @@ export const FiringBoardAll = ({
   }
 
   return (
-    <div className="grid gap-4">
-      {activeTables.map((table) => (
-        // Find reservation assigned to this table for course exclusions.
-        <FiringBoard
-          key={table.id}
-          table={table}
-          statuses={statuses}
-          timeline={timeline}
-          onUpdateStatus={onUpdateStatus}
-          role={role}
-          excludedCourses={reservations.find((reservation) => reservation.tableId === table.id)?.excludedCourses ?? []}
-        />
-      ))}
+    <div className={className ?? "grid gap-4"}>
+      {activeTables.map((table) => {
+        const reservation = reservations.find((item) => item.tableId === table.id);
+        return (
+          <FiringBoard
+            key={table.id}
+            table={table}
+            statuses={statuses}
+            timeline={timeline}
+            onUpdateStatus={onUpdateStatus}
+            role={role}
+            excludedCourses={reservation?.excludedCourses ?? []}
+            headerContent={
+              showTableVisualization && reservation
+                ? <TableVisualizer reservation={reservation} table={table} statuses={statuses} variant="plain" />
+                : undefined
+            }
+          />
+        );
+      })}
     </div>
   );
 };

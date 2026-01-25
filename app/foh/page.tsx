@@ -7,6 +7,7 @@ import { ReservationModal } from "../../components/ReservationModal";
 import { SeatTile } from "../../components/SeatTile";
 import { TableVisualizer } from "../../components/TableVisualizer";
 import { FiringBoard } from "../../components/FiringBoard";
+import { FiringBoardAll } from "../../components/FiringBoardAll";
 import type { Reservation, Table } from "../../lib/types";
 
 const FOHScreen = () => {
@@ -20,11 +21,14 @@ const FOHScreen = () => {
     updateSeatCount,
     updateStatus,
     resetService,
-    sessionId
+    sessionId,
+    soundEnabled,
+    toggleSound
   } = useService();
   const [selectedReservationId, setSelectedReservationId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
+  const [overviewMode, setOverviewMode] = useState(false);
 
   const reservations = useMemo(() => {
     if (!state) return [];
@@ -122,6 +126,20 @@ const FOHScreen = () => {
           >
             Back to setup
           </Link>
+          <button
+            type="button"
+            onClick={() => setOverviewMode((prev) => !prev)}
+            className={`px-3 py-2 rounded-lg border ${overviewMode ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
+          >
+            {overviewMode ? "All tables on" : "All tables off"}
+          </button>
+          <button
+            type="button"
+            onClick={toggleSound}
+            className={`px-3 py-2 rounded-lg border ${soundEnabled ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
+          >
+            Sound {soundEnabled ? "on" : "off"}
+          </button>
           <span className={`text-xs px-2 py-1 rounded-full ${connected ? "bg-sage text-ink" : "bg-garnet text-bone"}`}>
             {connected ? "Live" : "Offline"}
           </span>
@@ -268,10 +286,11 @@ const FOHScreen = () => {
                 <div>
                   <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table shape</label>
                   <select
-                    value={selectedReservation.tableShape ?? "round"}
+                    value={selectedReservation.tableShape ?? "square"}
                     onChange={(event) => updateReservation({ id: selectedReservation.id, tableShape: event.target.value as Reservation["tableShape"] })}
                     className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
                   >
+                    <option value="square">Square</option>
                     <option value="round">Round</option>
                     <option value="oval">Oval</option>
                     <option value="banquette">Banquette</option>
@@ -311,14 +330,27 @@ const FOHScreen = () => {
         </section>
 
         <section className="flex flex-col gap-4">
-          <FiringBoard
-            table={selectedTable}
-            statuses={state.statuses}
-            timeline={state.timeline}
-            onUpdateStatus={(status) => updateStatus({ status })}
-            role="FOH"
-            excludedCourses={selectedReservation?.excludedCourses ?? []}
-          />
+          {overviewMode ? (
+            <FiringBoardAll
+              reservations={reservations}
+              tables={tables}
+              statuses={state.statuses}
+              timeline={state.timeline}
+              onUpdateStatus={(status) => updateStatus({ status })}
+              role="FOH"
+              className="grid gap-4 md:grid-cols-2"
+              showTableVisualization
+            />
+          ) : (
+            <FiringBoard
+              table={selectedTable}
+              statuses={state.statuses}
+              timeline={state.timeline}
+              onUpdateStatus={(status) => updateStatus({ status })}
+              role="FOH"
+              excludedCourses={selectedReservation?.excludedCourses ?? []}
+            />
+          )}
         </section>
       </div>
 
