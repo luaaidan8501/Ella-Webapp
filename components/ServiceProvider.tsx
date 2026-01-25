@@ -146,12 +146,12 @@ export const ServiceProvider = ({
       path: "/api/socket",
       addTrailingSlash: false,
       query: { session: sessionId },
-      transports: ["websocket", "polling"],
+      transports: ["polling", "websocket"],
       upgrade: true,
       rememberUpgrade: true,
-      timeout: 10000,
-      reconnectionDelay: 500,
-      reconnectionDelayMax: 4000
+      timeout: 30000,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 10000
     });
     socketRef.current = socket;
 
