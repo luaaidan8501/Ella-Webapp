@@ -167,6 +167,124 @@ const FOHScreen = () => {
         </div>
       </header>
 
+      {overviewMode ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          {reservations.map((reservation) => {
+            const table = tables.find((item) => item.id === reservation.tableId) ?? null;
+            const tableCapacity = table?.capacity ?? null;
+            const tooManySeats = tableCapacity !== null && reservation.seats.length > tableCapacity;
+            return (
+              <div key={reservation.id} className="card p-5 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-white/50">Table</p>
+                    <h2 className="text-lg font-serif">{reservation.guestName}</h2>
+                    <p className="text-xs text-white/60">Party {reservation.partySize} · {reservation.seats.length} seats</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingReservation(reservation);
+                      setIsModalOpen(true);
+                    }}
+                    className="text-xs px-3 py-2 rounded-full border border-white/10"
+                  >
+                    Edit
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table assignment</label>
+                    <select
+                      value={reservation.tableId ?? ""}
+                      onChange={(event) => assignTable({ reservationId: reservation.id, tableId: event.target.value || null })}
+                      className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+                    >
+                      <option value="">Unassigned</option>
+                      {tables.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name} · cap {item.capacity}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table shape</label>
+                    <select
+                      value={reservation.tableShape ?? "square"}
+                      onChange={(event) => updateReservation({ id: reservation.id, tableShape: event.target.value as Reservation["tableShape"] })}
+                      className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+                    >
+                      <option value="square">Square</option>
+                      <option value="round">Round</option>
+                      <option value="oval">Oval</option>
+                      <option value="banquette">Banquette</option>
+                      <option value="counter">Counter</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-xs uppercase tracking-[0.2em] text-white/50">Notes</label>
+                    <input
+                      value={reservation.notes}
+                      onChange={(event) => updateReservation({ id: reservation.id, notes: event.target.value })}
+                      className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+                      placeholder="Service notes"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => updateSeatCount({ reservationId: reservation.id, count: reservation.seats.length - 1 })}
+                    disabled={reservation.seats.length <= 1}
+                    className="px-2 py-1 rounded-md border border-white/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    -
+                  </button>
+                  <span className="text-sm">{reservation.seats.length} seats</span>
+                  <button
+                    type="button"
+                    onClick={() => updateSeatCount({ reservationId: reservation.id, count: reservation.seats.length + 1 })}
+                    disabled={reservation.seats.length >= 6}
+                    className="px-2 py-1 rounded-md border border-white/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    +
+                  </button>
+                </div>
+                {tooManySeats && (
+                  <div className="rounded-xl border border-garnet/60 bg-garnet/20 p-3 text-sm">
+                    Seat count exceeds table capacity ({tableCapacity}). Consider reassigning or splitting.
+                  </div>
+                )}
+                <TableVisualizer reservation={reservation} table={table} statuses={state.statuses} showSeatDetails />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[45vh] overflow-auto subtle-scroll">
+                  {reservation.seats.map((seat) => (
+                    <SeatTile
+                      key={seat.id}
+                      seat={seat}
+                      onUpdate={(updatedSeat) => updateSeat({ reservationId: reservation.id, seat: updatedSeat })}
+                      onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
+                      maxPositions={maxPositions}
+                    />
+                  ))}
+                </div>
+                {table ? (
+                  <FiringBoard
+                    table={table}
+                    statuses={state.statuses}
+                    timeline={state.timeline}
+                    onUpdateStatus={(status) => updateStatus({ status })}
+                    role="FOH"
+                    excludedCourses={reservation.excludedCourses ?? []}
+                  />
+                ) : (
+                  <div className="text-white/60 text-sm">Assign a table to view firing status.</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
       <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_1.3fr_1.1fr] gap-6">
         <section className="card p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -330,29 +448,17 @@ const FOHScreen = () => {
         </section>
 
         <section className="flex flex-col gap-4">
-          {overviewMode ? (
-            <FiringBoardAll
-              reservations={reservations}
-              tables={tables}
-              statuses={state.statuses}
-              timeline={state.timeline}
-              onUpdateStatus={(status) => updateStatus({ status })}
-              role="FOH"
-              className="grid gap-4 md:grid-cols-2"
-              showTableVisualization
-            />
-          ) : (
-            <FiringBoard
-              table={selectedTable}
-              statuses={state.statuses}
-              timeline={state.timeline}
-              onUpdateStatus={(status) => updateStatus({ status })}
-              role="FOH"
-              excludedCourses={selectedReservation?.excludedCourses ?? []}
-            />
-          )}
+          <FiringBoard
+            table={selectedTable}
+            statuses={state.statuses}
+            timeline={state.timeline}
+            onUpdateStatus={(status) => updateStatus({ status })}
+            role="FOH"
+            excludedCourses={selectedReservation?.excludedCourses ?? []}
+          />
         </section>
       </div>
+      )}
 
       {isModalOpen && (
         <ReservationModal

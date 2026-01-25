@@ -72,72 +72,77 @@ const BOHScreen = () => {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-6">
-        <section className="space-y-4">
-          {overviewMode ? (
-            <FiringBoardAll
-              reservations={reservations}
-              tables={tables}
-              statuses={state.statuses}
-              timeline={state.timeline}
-              onUpdateStatus={(status) => updateStatus({ status })}
-              role="BOH"
-              className="grid gap-4 md:grid-cols-2"
-              showTableVisualization={visualMode}
-            />
-          ) : visualMode ? (
-            <div className="grid gap-4">
+      {overviewMode ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <FiringBoardAll
+            reservations={reservations}
+            tables={tables}
+            statuses={state.statuses}
+            timeline={state.timeline}
+            onUpdateStatus={(status) => updateStatus({ status })}
+            role="BOH"
+            className="grid gap-4 md:grid-cols-2"
+            showTableVisualization
+            showSeatDetails
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-6">
+          <section className="space-y-4">
+            {visualMode ? (
+              <div className="grid gap-4">
+                {assignedReservations.map((reservation) => {
+                  const table = tables.find((item) => item.id === reservation.tableId);
+                  if (!table) return null;
+                  return (
+                    <FiringBoard
+                      key={table.id}
+                      table={table}
+                      statuses={state.statuses}
+                      timeline={state.timeline}
+                      onUpdateStatus={(status) => updateStatus({ status })}
+                      role="BOH"
+                      excludedCourses={reservation.excludedCourses ?? []}
+                      headerContent={
+                        <TableVisualizer
+                          reservation={reservation}
+                          table={table}
+                          statuses={state.statuses}
+                          variant="plain"
+                          showSeatDetails
+                        />
+                      }
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <FiringBoardAll
+                reservations={reservations}
+                tables={tables}
+                statuses={state.statuses}
+                timeline={state.timeline}
+                onUpdateStatus={(status) => updateStatus({ status })}
+                role="BOH"
+              />
+            )}
+          </section>
+
+          <section className="card p-5 space-y-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-serif">Seat alerts</h2>
+              <span className="text-xs text-white/60">{assignedReservations.length} tables</span>
+            </div>
+            <div className="mt-4 space-y-3 max-h-[70vh] overflow-auto subtle-scroll">
               {assignedReservations.map((reservation) => {
                 const table = tables.find((item) => item.id === reservation.tableId);
                 if (!table) return null;
-                return (
-                  <FiringBoard
-                    key={table.id}
-                    table={table}
-                    statuses={state.statuses}
-                    timeline={state.timeline}
-                    onUpdateStatus={(status) => updateStatus({ status })}
-                    role="BOH"
-                    excludedCourses={reservation.excludedCourses ?? []}
-                    headerContent={
-                      <TableVisualizer
-                        reservation={reservation}
-                        table={table}
-                        statuses={state.statuses}
-                        variant="plain"
-                        showSeatDetails
-                      />
-                    }
-                  />
-                );
+                return <SeatSummary key={reservation.id} reservation={reservation} table={table} />;
               })}
             </div>
-          ) : (
-            <FiringBoardAll
-              reservations={reservations}
-              tables={tables}
-              statuses={state.statuses}
-              timeline={state.timeline}
-              onUpdateStatus={(status) => updateStatus({ status })}
-              role="BOH"
-            />
-          )}
-        </section>
-
-        <section className="card p-5 space-y-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-serif">Seat alerts</h2>
-            <span className="text-xs text-white/60">{assignedReservations.length} tables</span>
-          </div>
-          <div className="mt-4 space-y-3 max-h-[70vh] overflow-auto subtle-scroll">
-            {assignedReservations.map((reservation) => {
-              const table = tables.find((item) => item.id === reservation.tableId);
-              if (!table) return null;
-              return <SeatSummary key={reservation.id} reservation={reservation} table={table} />;
-            })}
-          </div>
-        </section>
-      </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 };

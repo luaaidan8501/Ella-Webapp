@@ -12,7 +12,8 @@ export const FiringBoardAll = ({
   onUpdateStatus,
   role,
   className,
-  showTableVisualization = false
+  showTableVisualization = false,
+  showSeatDetails = false
 }: {
   reservations: Reservation[];
   tables: Table[];
@@ -22,6 +23,7 @@ export const FiringBoardAll = ({
   role: Role;
   className?: string;
   showTableVisualization?: boolean;
+  showSeatDetails?: boolean;
 }) => {
   const activeTables = reservations
     .filter((reservation) => reservation.tableId)
@@ -48,7 +50,15 @@ export const FiringBoardAll = ({
             excludedCourses={reservation?.excludedCourses ?? []}
             headerContent={
               showTableVisualization && reservation
-                ? <TableVisualizer reservation={reservation} table={table} statuses={statuses} variant="plain" />
+                ? (
+                  <TableVisualizer
+                    reservation={reservation}
+                    table={table}
+                    statuses={statuses}
+                    variant="plain"
+                    showSeatDetails={showSeatDetails}
+                  />
+                )
                 : undefined
             }
           />

@@ -120,21 +120,21 @@ export const ServiceProvider = ({
     const oscillator = context.createOscillator();
     const gain = context.createGain();
     const frequencyMap: Record<ServiceStatus["status"], number> = {
-      STANDBY: 220,
-      PLATE_UP: 330,
-      PICK_UP: 440,
-      SERVED: 520
+      STANDBY: 1200,
+      PLATE_UP: 1600,
+      PICK_UP: 2000,
+      SERVED: 1400
     };
     const now = context.currentTime;
     oscillator.frequency.value = frequencyMap[status];
-    oscillator.type = "sine";
+    oscillator.type = "square";
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    gain.gain.exponentialRampToValueAtTime(0.45, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
     oscillator.connect(gain);
     gain.connect(context.destination);
     oscillator.start(now);
-    oscillator.stop(now + 0.28);
+    oscillator.stop(now + 0.2);
   };
 
   useEffect(() => {

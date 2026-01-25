@@ -48,6 +48,16 @@ export const TableVisualizer = ({
         const angle = startAngle + step * i;
         points.push({ x: center + radius * Math.cos(angle), y: center + radius * Math.sin(angle) });
       }
+    } else if (reservation.tableShape === "square") {
+      const halfW = shape.size.w / 2;
+      const halfH = shape.size.h / 2;
+      const offset = 18;
+      points.push({ x: center, y: center - halfH - offset }); // top
+      points.push({ x: center + halfW + offset, y: center - halfH / 2 }); // right-top
+      points.push({ x: center + halfW + offset, y: center + halfH / 2 }); // right-bottom
+      points.push({ x: center, y: center + halfH + offset }); // bottom
+      points.push({ x: center - halfW - offset, y: center + halfH / 2 }); // left-bottom
+      points.push({ x: center - halfW - offset, y: center - halfH / 2 }); // left-top
     } else {
       const step = (Math.PI * 2) / maxSeats;
       for (let i = 0; i < maxSeats; i += 1) {
@@ -56,7 +66,7 @@ export const TableVisualizer = ({
       }
     }
     return points;
-  }, [layoutArc, center, radius, startAngle, endAngle]);
+  }, [layoutArc, center, radius, startAngle, endAngle, reservation.tableShape, shape.size.h, shape.size.w]);
 
   const currentCourse = useMemo(() => {
     if (!table || !statuses) return null;
