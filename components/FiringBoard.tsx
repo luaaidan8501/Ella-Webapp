@@ -6,8 +6,8 @@ import { StatusBadge } from "./StatusBadge";
 
 const statusCycle: ServiceStatusType[] = ["STANDBY", "PLATE_UP", "PICK_UP", "SERVED"];
 
-const courseNames = ["Bread", "Salad", "Soup", "Mains", "Pre-Dessert", "Dessert & Coffee"];
-const drinkNames = ["Spritz", "Sour"];
+const courseNames = ["C1", "C2", "C3", "C4", "C5", "C6"];
+const drinkNames = ["D1", "D2"];
 
 const formatTime = (timestamp: number) => {
   const date = new Date(timestamp);
@@ -28,7 +28,8 @@ export const FiringBoard = ({
   onUpdateStatus,
   role,
   excludedCourses = [],
-  headerContent
+  headerContent,
+  showTimeline = true
 }: {
   table: Table | null;
   statuses: ServiceStatus[];
@@ -37,6 +38,7 @@ export const FiringBoard = ({
   role: Role;
   excludedCourses?: number[];
   headerContent?: ReactNode;
+  showTimeline?: boolean;
 }) => {
   if (!table) {
     return (
@@ -84,7 +86,7 @@ export const FiringBoard = ({
       <div className="space-y-4">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-white/50">Courses</p>
-          <div className="mt-2 grid grid-cols-2 xl:grid-cols-3 gap-3">
+          <div className="mt-2 grid grid-cols-3 gap-2">
             {Array.from({ length: 6 }, (_, index) => {
               const item = index + 1;
               const key = `${table.id}:${item}:`;
@@ -97,18 +99,18 @@ export const FiringBoard = ({
                   key={`course-${item}`}
                   type="button"
                   onClick={() => handleAdvance("course", item)}
-                  className={`rounded-xl border p-3 transition ${
+                  className={`rounded-xl border p-2 transition ${
                     isExcluded
                       ? "border-garnet/70 text-garnet bg-garnet/10"
                       : "border-white/10 hover:border-brass/70"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">{courseNames[item - 1]}</span>
+                    <span className="text-xs font-semibold">{courseNames[item - 1]}</span>
                     <StatusBadge status={status} />
                   </div>
                   {isExcluded && <div className="mt-1 text-[10px] uppercase tracking-[0.2em]">Skip</div>}
-                  <div className="mt-2 text-[10px] text-white/50 uppercase tracking-[0.2em]">{meta}</div>
+                  <div className="mt-1 text-[9px] text-white/50 uppercase tracking-[0.2em]">{meta}</div>
                 </button>
               );
             })}
@@ -116,7 +118,7 @@ export const FiringBoard = ({
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-white/50">Drinks</p>
-          <div className="mt-2 grid grid-cols-2 gap-3">
+          <div className="mt-2 grid grid-cols-2 gap-2">
             {Array.from({ length: 2 }, (_, index) => {
               const item = index + 1;
               const key = `${table.id}::${item}`;
@@ -128,13 +130,13 @@ export const FiringBoard = ({
                   key={`drink-${item}`}
                   type="button"
                   onClick={() => handleAdvance("drink", item)}
-                  className="rounded-xl border border-white/10 p-3 hover:border-sage/70 transition"
+                  className="rounded-xl border border-white/10 p-2 hover:border-sage/70 transition"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">{drinkNames[item - 1]}</span>
+                    <span className="text-xs font-semibold">{drinkNames[item - 1]}</span>
                     <StatusBadge status={status} />
                   </div>
-                  <div className="mt-2 text-[10px] text-white/50 uppercase tracking-[0.2em]">{meta}</div>
+                  <div className="mt-1 text-[9px] text-white/50 uppercase tracking-[0.2em]">{meta}</div>
                 </button>
               );
             })}
@@ -142,21 +144,23 @@ export const FiringBoard = ({
         </div>
       </div>
 
-      <div className="border-t border-white/10 pt-4">
-        <p className="text-xs uppercase tracking-[0.2em] text-white/50">Service timeline</p>
-        <div className="mt-3 space-y-2 max-h-32 overflow-auto subtle-scroll">
-          {tableTimeline.length === 0 ? (
-            <p className="text-white/40 text-sm">No events yet.</p>
-          ) : (
-            tableTimeline.map((event) => (
-              <div key={event.id} className="flex items-center justify-between text-sm">
-                <span>{event.message}</span>
-                <span className="text-white/50 text-xs">{event.createdBy} · {formatTime(event.createdAt)}</span>
-              </div>
-            ))
-          )}
+      {showTimeline && (
+        <div className="border-t border-white/10 pt-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/50">Service timeline</p>
+          <div className="mt-3 space-y-2 max-h-32 overflow-auto subtle-scroll">
+            {tableTimeline.length === 0 ? (
+              <p className="text-white/40 text-sm">No events yet.</p>
+            ) : (
+              tableTimeline.map((event) => (
+                <div key={event.id} className="flex items-center justify-between text-sm">
+                  <span>{event.message}</span>
+                  <span className="text-white/50 text-xs">{event.createdBy} · {formatTime(event.createdAt)}</span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

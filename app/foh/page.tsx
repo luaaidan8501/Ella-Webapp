@@ -29,6 +29,9 @@ const FOHScreen = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [overviewMode, setOverviewMode] = useState(false);
+  const [collapseSeatOptions, setCollapseSeatOptions] = useState(true);
+  const [collapseTimeline, setCollapseTimeline] = useState(true);
+  const [collapseTableDetails, setCollapseTableDetails] = useState(true);
 
   const reservations = useMemo(() => {
     if (!state) return [];
@@ -133,6 +136,31 @@ const FOHScreen = () => {
           >
             {overviewMode ? "All tables on" : "All tables off"}
           </button>
+          {overviewMode && (
+            <>
+              <button
+                type="button"
+                onClick={() => setCollapseSeatOptions((prev) => !prev)}
+                className={`px-3 py-2 rounded-lg border ${collapseSeatOptions ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
+              >
+                Seat options {collapseSeatOptions ? "collapsed" : "open"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCollapseTableDetails((prev) => !prev)}
+                className={`px-3 py-2 rounded-lg border ${collapseTableDetails ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
+              >
+                Table details {collapseTableDetails ? "collapsed" : "open"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCollapseTimeline((prev) => !prev)}
+                className={`px-3 py-2 rounded-lg border ${collapseTimeline ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
+              >
+                Timeline {collapseTimeline ? "collapsed" : "open"}
+              </button>
+            </>
+          )}
           <button
             type="button"
             onClick={toggleSound}
@@ -168,13 +196,13 @@ const FOHScreen = () => {
       </header>
 
       {overviewMode ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {reservations.map((reservation) => {
             const table = tables.find((item) => item.id === reservation.tableId) ?? null;
             const tableCapacity = table?.capacity ?? null;
             const tooManySeats = tableCapacity !== null && reservation.seats.length > tableCapacity;
             return (
-              <div key={reservation.id} className="card p-5 flex flex-col gap-4">
+              <div key={reservation.id} className="card p-4 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.2em] text-white/50">Table</p>
@@ -192,46 +220,48 @@ const FOHScreen = () => {
                     Edit
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table assignment</label>
-                    <select
-                      value={reservation.tableId ?? ""}
-                      onChange={(event) => assignTable({ reservationId: reservation.id, tableId: event.target.value || null })}
-                      className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
-                    >
-                      <option value="">Unassigned</option>
-                      {tables.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.name} · cap {item.capacity}
-                        </option>
-                      ))}
-                    </select>
+                {!collapseTableDetails && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table assignment</label>
+                      <select
+                        value={reservation.tableId ?? ""}
+                        onChange={(event) => assignTable({ reservationId: reservation.id, tableId: event.target.value || null })}
+                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+                      >
+                        <option value="">Unassigned</option>
+                        {tables.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name} · cap {item.capacity}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table shape</label>
+                      <select
+                        value={reservation.tableShape ?? "square"}
+                        onChange={(event) => updateReservation({ id: reservation.id, tableShape: event.target.value as Reservation["tableShape"] })}
+                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+                      >
+                        <option value="square">Square</option>
+                        <option value="round">Round</option>
+                        <option value="oval">Oval</option>
+                        <option value="banquette">Banquette</option>
+                        <option value="counter">Counter</option>
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="text-xs uppercase tracking-[0.2em] text-white/50">Notes</label>
+                      <input
+                        value={reservation.notes}
+                        onChange={(event) => updateReservation({ id: reservation.id, notes: event.target.value })}
+                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+                        placeholder="Service notes"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table shape</label>
-                    <select
-                      value={reservation.tableShape ?? "square"}
-                      onChange={(event) => updateReservation({ id: reservation.id, tableShape: event.target.value as Reservation["tableShape"] })}
-                      className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
-                    >
-                      <option value="square">Square</option>
-                      <option value="round">Round</option>
-                      <option value="oval">Oval</option>
-                      <option value="banquette">Banquette</option>
-                      <option value="counter">Counter</option>
-                    </select>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="text-xs uppercase tracking-[0.2em] text-white/50">Notes</label>
-                    <input
-                      value={reservation.notes}
-                      onChange={(event) => updateReservation({ id: reservation.id, notes: event.target.value })}
-                      className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
-                      placeholder="Service notes"
-                    />
-                  </div>
-                </div>
+                )}
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -257,17 +287,30 @@ const FOHScreen = () => {
                   </div>
                 )}
                 <TableVisualizer reservation={reservation} table={table} statuses={state.statuses} showSeatDetails />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[45vh] overflow-auto subtle-scroll">
-                  {reservation.seats.map((seat) => (
-                    <SeatTile
-                      key={seat.id}
-                      seat={seat}
-                      onUpdate={(updatedSeat) => updateSeat({ reservationId: reservation.id, seat: updatedSeat })}
-                      onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
-                      maxPositions={maxPositions}
-                    />
-                  ))}
-                </div>
+                {!collapseSeatOptions ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[45vh] overflow-auto subtle-scroll">
+                    {reservation.seats.map((seat) => (
+                      <SeatTile
+                        key={seat.id}
+                        seat={seat}
+                        onUpdate={(updatedSeat) => updateSeat({ reservationId: reservation.id, seat: updatedSeat })}
+                        onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
+                        maxPositions={maxPositions}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    {reservation.seats.map((seat) => (
+                      <SeatTile
+                        key={seat.id}
+                        seat={seat}
+                        compact
+                        onUpdate={(updatedSeat) => updateSeat({ reservationId: reservation.id, seat: updatedSeat })}
+                      />
+                    ))}
+                  </div>
+                )}
                 {table ? (
                   <FiringBoard
                     table={table}
@@ -276,6 +319,7 @@ const FOHScreen = () => {
                     onUpdateStatus={(status) => updateStatus({ status })}
                     role="FOH"
                     excludedCourses={reservation.excludedCourses ?? []}
+                    showTimeline={!collapseTimeline}
                   />
                 ) : (
                   <div className="text-white/60 text-sm">Assign a table to view firing status.</div>

@@ -17,13 +17,15 @@ export const SeatTile = ({
   onUpdate,
   onPositionChange,
   maxPositions = 6,
-  readOnly = false
+  readOnly = false,
+  compact = false
 }: {
   seat: Seat;
   onUpdate: (seat: Seat) => void;
   onPositionChange?: (position: number) => void;
   maxPositions?: number;
   readOnly?: boolean;
+  compact?: boolean;
 }) => {
   const handleLateToggle = () => {
     if (readOnly) return;
@@ -58,8 +60,8 @@ export const SeatTile = ({
   };
 
   return (
-    <div className="rounded-xl border border-white/10 p-3 bg-white/5">
-      <div className="flex items-center justify-between">
+    <div className={`rounded-xl border border-white/10 bg-white/5 ${compact ? "p-2" : "p-3"}`}>
+      <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-mono">Seat {seat.seatNumber}</p>
         <button
           type="button"
@@ -70,6 +72,8 @@ export const SeatTile = ({
           {seat.lateStatus}
         </button>
       </div>
+      {compact ? null : (
+        <>
       <div className="mt-3">
         <label className="text-[10px] uppercase tracking-[0.2em] text-white/40">Allergy</label>
         <input
@@ -153,6 +157,8 @@ export const SeatTile = ({
             ))}
           </select>
         </div>
+      )}
+        </>
       )}
     </div>
   );
