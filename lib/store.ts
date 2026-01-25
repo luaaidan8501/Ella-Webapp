@@ -116,8 +116,23 @@ export class ServiceStore {
   }
 
   private hydrateFromState(state: ServiceState) {
+    const allowedShapes: Reservation["tableShape"][] = ["square", "round", "oval", "banquette", "counter"];
+    const sanitizeReservation = (reservation: Reservation): Reservation => {
+      const tableShape = allowedShapes.includes(reservation.tableShape) ? reservation.tableShape : "square";
+      const excludedCourses = reservation.excludedCourses ?? [];
+      const order = reservation.order ?? 0;
+      const seats = reservation.seats.map((seat) => ({
+        ...seat,
+        excludedCourses: seat.excludedCourses ?? [],
+        excludedDrinks: seat.excludedDrinks ?? []
+      }));
+      return { ...reservation, tableShape, excludedCourses, order, seats };
+    };
+
     this.version = state.version;
-    this.reservations = new Map(state.reservations.map((reservation) => [reservation.id, reservation]));
+    this.reservations = new Map(
+      state.reservations.map((reservation) => [reservation.id, sanitizeReservation(reservation)])
+    );
     this.tables = new Map(state.tables.map((table) => [table.id, table]));
     this.statuses = new Map(
       state.statuses.map((status) => [

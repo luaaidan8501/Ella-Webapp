@@ -33,7 +33,7 @@ export const TableVisualizer = ({
   const orderedSeats = [...reservation.seats].sort((a, b) => a.seatNumber - b.seatNumber);
   const radius = 92;
   const center = 120;
-  const shape = shapeStyles[reservation.tableShape ?? "square"];
+  const shape = shapeStyles[reservation.tableShape ?? "square"] ?? shapeStyles.square;
 
   const layoutArc = reservation.tableShape === "banquette" || reservation.tableShape === "counter";
   const startAngle = layoutArc ? Math.PI * 1.05 : -Math.PI / 2;
