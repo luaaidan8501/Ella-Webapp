@@ -69,19 +69,22 @@ export const FiringBoard = ({
 
   return (
     <div className="card p-5 flex flex-col gap-5 h-full">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          {headerContent ?? (
-            <>
-              <p className="text-white/60 text-xs uppercase tracking-[0.2em]">Firing board</p>
-              <h2 className="text-2xl font-serif">{table.name}</h2>
-            </>
-          )}
+      {headerContent ? (
+        <div className="flex flex-col gap-2">
+          <div>{headerContent}</div>
+          <div className="text-xs text-white/60 self-end">Statuses update live</div>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-white/60">Statuses update live</p>
+      ) : (
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-white/60 text-xs uppercase tracking-[0.2em]">Firing board</p>
+            <h2 className="text-2xl font-serif">{table.name}</h2>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-white/60">Statuses update live</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="space-y-4">
         <div>

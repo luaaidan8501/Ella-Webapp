@@ -145,17 +145,24 @@ export const SeatTile = ({
       {onPositionChange && !readOnly && (
         <div className="mt-3">
           <label className="text-[10px] uppercase tracking-[0.2em] text-white/40">Position</label>
-          <select
-            value={seat.seatNumber}
-            onChange={(event) => onPositionChange(Number(event.target.value))}
-            className="mt-1 w-full bg-black/40 border border-white/10 rounded-md px-2 py-1 text-sm"
-          >
-            {Array.from({ length: maxPositions }, (_, index) => (
-              <option key={`pos-${index + 1}`} value={index + 1}>
-                Position {index + 1}
-              </option>
-            ))}
-          </select>
+          <div className="mt-2 flex gap-2 overflow-x-auto pb-1 subtle-scroll">
+            {Array.from({ length: maxPositions }, (_, index) => {
+              const position = index + 1;
+              const selected = position === seat.seatNumber;
+              return (
+                <button
+                  key={`pos-${position}`}
+                  type="button"
+                  onClick={() => onPositionChange(position)}
+                  className={`px-3 py-1 rounded-full border text-xs whitespace-nowrap ${
+                    selected ? "border-brass text-brass bg-brass/10" : "border-white/10 text-white/70"
+                  }`}
+                >
+                  Pos {position}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
         </>
