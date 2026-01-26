@@ -113,6 +113,7 @@ export const ServiceProvider = ({
   const [soundEnabled, setSoundEnabled] = useState(false);
   const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
   const audioRef = useRef<AudioContext | null>(null);
+  const soundEnabledRef = useRef(false);
 
   const playStatusSound = (status: ServiceStatus["status"]) => {
     if (!audioRef.current) return;
@@ -140,8 +141,13 @@ export const ServiceProvider = ({
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("soundEnabled") : null;
     if (stored) {
-      setSoundEnabled(stored === "true");
+      const enabled = stored === "true";
+      setSoundEnabled(enabled);
+      soundEnabledRef.current = enabled;
     }
+  }, []);
+
+  useEffect(() => {
     const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io({
       path: "/api/socket",
       addTrailingSlash: false,
@@ -188,7 +194,7 @@ export const ServiceProvider = ({
 
     socket.on("status_updated", (status, version) => {
       setState((prev) => (prev ? { ...applyStatusUpdate(prev, status), version } : prev));
-      if (soundEnabled) {
+      if (soundEnabledRef.current) {
         playStatusSound(status.status);
       }
     });
@@ -206,7 +212,7 @@ export const ServiceProvider = ({
     return () => {
       socket.disconnect();
     };
-  }, [sessionId, soundEnabled]);
+  }, [sessionId]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -215,6 +221,7 @@ export const ServiceProvider = ({
       audioRef.current = new AudioContext();
       void audioRef.current.resume();
     }
+    soundEnabledRef.current = soundEnabled;
   }, [soundEnabled]);
 
   const actions = useMemo(() => {

@@ -288,26 +288,28 @@ const FOHScreen = () => {
                 )}
                 <TableVisualizer reservation={reservation} table={table} statuses={state.statuses} showSeatDetails />
                 {!collapseSeatOptions ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[45vh] overflow-auto subtle-scroll">
+                  <div className="flex gap-3 overflow-x-auto pb-2 subtle-scroll">
                     {reservation.seats.map((seat) => (
-                      <SeatTile
-                        key={seat.id}
-                        seat={seat}
-                        onUpdate={(updatedSeat) => updateSeat({ reservationId: reservation.id, seat: updatedSeat })}
-                        onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
-                        maxPositions={maxPositions}
-                      />
+                      <div key={seat.id} className="min-w-[240px]">
+                        <SeatTile
+                          seat={seat}
+                          onUpdate={(updatedSeat) => updateSeat({ reservationId: reservation.id, seat: updatedSeat })}
+                          onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
+                          maxPositions={maxPositions}
+                        />
+                      </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="flex gap-2 overflow-x-auto pb-2 subtle-scroll">
                     {reservation.seats.map((seat) => (
-                      <SeatTile
-                        key={seat.id}
-                        seat={seat}
-                        compact
-                        onUpdate={(updatedSeat) => updateSeat({ reservationId: reservation.id, seat: updatedSeat })}
-                      />
+                      <div key={seat.id} className="min-w-[140px]">
+                        <SeatTile
+                          seat={seat}
+                          compact
+                          onUpdate={(updatedSeat) => updateSeat({ reservationId: reservation.id, seat: updatedSeat })}
+                        />
+                      </div>
                     ))}
                   </div>
                 )}
@@ -474,15 +476,16 @@ const FOHScreen = () => {
                   Seat count exceeds table capacity ({capacity}). Consider reassigning or splitting.
                 </div>
               )}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[45vh] overflow-auto subtle-scroll">
+              <div className="flex gap-3 overflow-x-auto pb-2 subtle-scroll">
                 {selectedReservation.seats.map((seat) => (
-                  <SeatTile
-                    key={seat.id}
-                    seat={seat}
-                    onUpdate={(updatedSeat) => updateSeat({ reservationId: selectedReservation.id, seat: updatedSeat })}
-                    onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
-                    maxPositions={maxPositions}
-                  />
+                  <div key={seat.id} className="min-w-[240px]">
+                    <SeatTile
+                      seat={seat}
+                      onUpdate={(updatedSeat) => updateSeat({ reservationId: selectedReservation.id, seat: updatedSeat })}
+                      onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
+                      maxPositions={maxPositions}
+                    />
+                  </div>
                 ))}
               </div>
             </>

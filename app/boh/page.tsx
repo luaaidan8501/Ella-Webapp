@@ -12,6 +12,7 @@ const BOHScreen = () => {
   const { state, connected, updateStatus, sessionId, soundEnabled, toggleSound } = useService();
   const [visualMode, setVisualMode] = useState(false);
   const [overviewMode, setOverviewMode] = useState(false);
+  const [collapseTimeline, setCollapseTimeline] = useState(true);
 
   const reservations = state?.reservations ?? [];
   const tables = state?.tables ?? [];
@@ -58,6 +59,13 @@ const BOHScreen = () => {
           </button>
           <button
             type="button"
+            onClick={() => setCollapseTimeline((prev) => !prev)}
+            className={`px-3 py-2 rounded-lg border ${collapseTimeline ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
+          >
+            Timeline {collapseTimeline ? "collapsed" : "open"}
+          </button>
+          <button
+            type="button"
             onClick={() => setVisualMode((prev) => !prev)}
             className={`px-3 py-2 rounded-lg border ${visualMode ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
           >
@@ -73,24 +81,23 @@ const BOHScreen = () => {
       </header>
 
       {overviewMode ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          <FiringBoardAll
-            reservations={reservations}
-            tables={tables}
-            statuses={state.statuses}
-            timeline={state.timeline}
-            onUpdateStatus={(status) => updateStatus({ status })}
-            role="BOH"
-            className="grid gap-4 md:grid-cols-2"
-            showTableVisualization
-            showSeatDetails
-          />
-        </div>
+        <FiringBoardAll
+          reservations={reservations}
+          tables={tables}
+          statuses={state.statuses}
+          timeline={state.timeline}
+          onUpdateStatus={(status) => updateStatus({ status })}
+          role="BOH"
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+          showTableVisualization
+          showSeatDetails
+          showTimeline={!collapseTimeline}
+        />
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-6">
+        <div className={`grid grid-cols-1 ${visualMode ? "xl:grid-cols-[3fr_1fr]" : "xl:grid-cols-[2fr_1fr]"} gap-6`}>
           <section className="space-y-4">
             {visualMode ? (
-              <div className="grid gap-4">
+              <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
                 {assignedReservations.map((reservation) => {
                   const table = tables.find((item) => item.id === reservation.tableId);
                   if (!table) return null;
@@ -103,6 +110,7 @@ const BOHScreen = () => {
                       onUpdateStatus={(status) => updateStatus({ status })}
                       role="BOH"
                       excludedCourses={reservation.excludedCourses ?? []}
+                      showTimeline={!collapseTimeline}
                       headerContent={
                         <TableVisualizer
                           reservation={reservation}
@@ -124,6 +132,7 @@ const BOHScreen = () => {
                 timeline={state.timeline}
                 onUpdateStatus={(status) => updateStatus({ status })}
                 role="BOH"
+                showTimeline={!collapseTimeline}
               />
             )}
           </section>
