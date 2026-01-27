@@ -476,16 +476,15 @@ const FOHScreen = () => {
                   Seat count exceeds table capacity ({capacity}). Consider reassigning or splitting.
                 </div>
               )}
-              <div className="flex gap-3 overflow-x-auto pb-2 subtle-scroll">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[45vh] overflow-y-auto subtle-scroll">
                 {selectedReservation.seats.map((seat) => (
-                  <div key={seat.id} className="min-w-[240px]">
-                    <SeatTile
-                      seat={seat}
-                      onUpdate={(updatedSeat) => updateSeat({ reservationId: selectedReservation.id, seat: updatedSeat })}
-                      onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
-                      maxPositions={maxPositions}
-                    />
-                  </div>
+                  <SeatTile
+                    key={seat.id}
+                    seat={seat}
+                    onUpdate={(updatedSeat) => updateSeat({ reservationId: selectedReservation.id, seat: updatedSeat })}
+                    onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
+                    maxPositions={maxPositions}
+                  />
                 ))}
               </div>
             </>
