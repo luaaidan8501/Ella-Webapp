@@ -530,7 +530,7 @@ const FOHScreen = () => {
 };
 
 export default function FOHPage({ searchParams }: { searchParams?: { session?: string } }) {
-  const sessionId = searchParams?.session ?? "live";
+  const sessionId = "live";
   return (
     <ServiceProvider role="FOH" sessionId={sessionId}>
       <FOHScreen />

@@ -157,7 +157,7 @@ const BOHScreen = () => {
 };
 
 export default function BOHPage({ searchParams }: { searchParams?: { session?: string } }) {
-  const sessionId = searchParams?.session ?? "live";
+  const sessionId = "live";
   return (
     <ServiceProvider role="BOH" sessionId={sessionId}>
       <BOHScreen />

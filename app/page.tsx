@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import type { Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import { ServiceProvider, useService } from "../components/ServiceProvider";
 import { TableVisualizer } from "../components/TableVisualizer";
@@ -507,14 +506,8 @@ const DeleteModal = ({
   );
 };
 
-const LandingContent = ({
-  trainingMode,
-  setTrainingMode
-}: {
-  trainingMode: boolean;
-  setTrainingMode: Dispatch<SetStateAction<boolean>>;
-}) => {
-  const sessionId = trainingMode ? "training" : "live";
+const LandingContent = () => {
+  const sessionId = "live";
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-6">
@@ -544,18 +537,9 @@ const LandingContent = ({
             </Link>
           </div>
 
-          <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
-            <div>
-              <p className="text-sm">Training mode</p>
-              <p className="text-xs text-white/50">Use a separate live session for practice runs.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setTrainingMode((prev) => !prev)}
-              className={`px-4 py-2 rounded-full border ${trainingMode ? "bg-brass text-ink border-brass" : "border-white/20 text-white/70"}`}
-            >
-              {trainingMode ? "Training On" : "Training Off"}
-            </button>
+          <div className="mt-6 border-t border-white/10 pt-4">
+            <p className="text-sm">Session mode</p>
+            <p className="text-xs text-white/50">Live session only (shared across all devices).</p>
           </div>
         </div>
 
@@ -566,12 +550,11 @@ const LandingContent = ({
 };
 
 export default function HomePage() {
-  const [trainingMode, setTrainingMode] = useState(false);
-  const sessionId = trainingMode ? "training" : "live";
+  const sessionId = "live";
 
   return (
     <ServiceProvider role="FOH" sessionId={sessionId}>
-      <LandingContent trainingMode={trainingMode} setTrainingMode={setTrainingMode} />
+      <LandingContent />
     </ServiceProvider>
   );
 }
