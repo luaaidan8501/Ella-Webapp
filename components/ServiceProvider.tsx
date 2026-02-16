@@ -121,7 +121,7 @@ export const ServiceProvider = ({
     if (!synth) return;
     const phrases: Record<ServiceStatus["status"], string> = {
       STANDBY: "standby",
-      PLATE_UP: "plate up",
+      PLATE_UP: "fire",
       PICK_UP: "pick up",
       SERVED: "served"
     };
