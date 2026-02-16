@@ -7,7 +7,7 @@ import { StatusBadge } from "./StatusBadge";
 const statusCycle: ServiceStatusType[] = ["STANDBY", "PLATE_UP", "PICK_UP", "SERVED"];
 
 const courseNames = ["C1", "C2", "C3", "C4", "C5", "C6"];
-const drinkNames = ["D1", "D2"];
+const drinkNames = ["D1", "D2", "D3 Coffee"];
 
 const formatTime = (timestamp: number) => {
   const date = new Date(timestamp);
@@ -121,8 +121,8 @@ export const FiringBoard = ({
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-white/50">Drinks</p>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {Array.from({ length: 2 }, (_, index) => {
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {Array.from({ length: 3 }, (_, index) => {
               const item = index + 1;
               const key = `${table.id}::${item}`;
               const current = statusMap.get(key);

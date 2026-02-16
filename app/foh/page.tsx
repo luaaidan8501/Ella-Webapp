@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ServiceProvider, useService } from "../../components/ServiceProvider";
 import { ReservationModal } from "../../components/ReservationModal";
 import { SeatTile } from "../../components/SeatTile";
-import { TableVisualizer } from "../../components/TableVisualizer";
 import { FiringBoard } from "../../components/FiringBoard";
 import { FiringBoardAll } from "../../components/FiringBoardAll";
 import type { Reservation, Table } from "../../lib/types";
@@ -73,43 +72,6 @@ const FOHScreen = () => {
   const selectedTable = tables.find((table) => table.id === selectedReservation?.tableId) ?? null;
   const capacity = selectedTable?.capacity ?? null;
   const overCapacity = capacity !== null && selectedReservation && selectedReservation.seats.length > capacity;
-  const maxPositions = 6;
-
-  const handleSeatPositionChange = (seatId: string, targetPosition: number) => {
-    if (!selectedReservation) return;
-    const seats = selectedReservation.seats;
-    const seat = seats.find((item) => item.id === seatId);
-    if (!seat || seat.seatNumber === targetPosition) return;
-
-    const positions = Array.from({ length: maxPositions }, (_, index) =>
-      seats.find((item) => item.seatNumber === index + 1) ?? null
-    );
-    const currentIndex = seat.seatNumber - 1;
-    const targetIndex = targetPosition - 1;
-    positions[currentIndex] = null;
-
-    if (!positions[targetIndex]) {
-      positions[targetIndex] = seat;
-    } else {
-      let emptyIndex = currentIndex;
-      const prevIndex = (index: number) => (index - 1 + maxPositions) % maxPositions;
-      while (emptyIndex !== targetIndex) {
-        const fromIndex = prevIndex(emptyIndex);
-        positions[emptyIndex] = positions[fromIndex];
-        positions[fromIndex] = null;
-        emptyIndex = fromIndex;
-      }
-      positions[targetIndex] = seat;
-    }
-
-    positions.forEach((item, index) => {
-      if (!item) return;
-      const newSeatNumber = index + 1;
-      if (item.seatNumber !== newSeatNumber) {
-        updateSeat({ reservationId: selectedReservation.id, seat: { ...item, seatNumber: newSeatNumber } });
-      }
-    });
-  };
 
   if (!state) {
     return <div className="p-10 text-white/60">Connecting to service state...</div>;
@@ -134,7 +96,7 @@ const FOHScreen = () => {
             onClick={() => setOverviewMode((prev) => !prev)}
             className={`px-3 py-2 rounded-lg border ${overviewMode ? "border-brass text-brass" : "border-white/20 text-white/70"}`}
           >
-            {overviewMode ? "All tables on" : "All tables off"}
+          {overviewMode ? "All tables on" : "All tables off"}
           </button>
           {overviewMode && (
             <>
@@ -237,20 +199,6 @@ const FOHScreen = () => {
                         ))}
                       </select>
                     </div>
-                    <div>
-                      <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table shape</label>
-                      <select
-                        value={reservation.tableShape ?? "square"}
-                        onChange={(event) => updateReservation({ id: reservation.id, tableShape: event.target.value as Reservation["tableShape"] })}
-                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
-                      >
-                        <option value="square">Square</option>
-                        <option value="round">Round</option>
-                        <option value="oval">Oval</option>
-                        <option value="banquette">Banquette</option>
-                        <option value="counter">Counter</option>
-                      </select>
-                    </div>
                     <div className="md:col-span-2">
                       <label className="text-xs uppercase tracking-[0.2em] text-white/50">Notes</label>
                       <input
@@ -286,7 +234,6 @@ const FOHScreen = () => {
                     Seat count exceeds table capacity ({tableCapacity}). Consider reassigning or splitting.
                   </div>
                 )}
-                <TableVisualizer reservation={reservation} table={table} statuses={state.statuses} showSeatDetails />
                 {!collapseSeatOptions ? (
                   <div className="flex gap-3 overflow-x-auto pb-2 subtle-scroll">
                     {reservation.seats.map((seat) => (
@@ -294,8 +241,6 @@ const FOHScreen = () => {
                         <SeatTile
                           seat={seat}
                           onUpdate={(updatedSeat) => updateSeat({ reservationId: reservation.id, seat: updatedSeat })}
-                          onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
-                          maxPositions={maxPositions}
                         />
                       </div>
                     ))}
@@ -425,7 +370,6 @@ const FOHScreen = () => {
 
           {selectedReservation ? (
             <>
-              <TableVisualizer reservation={selectedReservation} table={selectedTable} statuses={state.statuses} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table assignment</label>
@@ -448,20 +392,6 @@ const FOHScreen = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-[0.2em] text-white/50">Table shape</label>
-                  <select
-                    value={selectedReservation.tableShape ?? "square"}
-                    onChange={(event) => updateReservation({ id: selectedReservation.id, tableShape: event.target.value as Reservation["tableShape"] })}
-                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2"
-                  >
-                    <option value="square">Square</option>
-                    <option value="round">Round</option>
-                    <option value="oval">Oval</option>
-                    <option value="banquette">Banquette</option>
-                    <option value="counter">Counter</option>
-                  </select>
-                </div>
-                <div>
                   <label className="text-xs uppercase tracking-[0.2em] text-white/50">Notes</label>
                   <input
                     value={selectedReservation.notes}
@@ -482,8 +412,6 @@ const FOHScreen = () => {
                     key={seat.id}
                     seat={seat}
                     onUpdate={(updatedSeat) => updateSeat({ reservationId: selectedReservation.id, seat: updatedSeat })}
-                    onPositionChange={(position) => handleSeatPositionChange(seat.id, position)}
-                    maxPositions={maxPositions}
                   />
                 ))}
               </div>

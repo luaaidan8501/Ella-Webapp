@@ -4,7 +4,7 @@ import type { Seat } from "../lib/types";
 
 const lateCycle: Seat["lateStatus"][] = ["on-time", "late", "arrived"];
 const drinkCycle: Seat["drinkPreference"][] = ["none", "cocktail", "mocktail"];
-const drinkLabels = ["Drink 1", "Drink 2"];
+const drinkLabels = ["D1", "D2", "D3"];
 
 const badgeForLate = (status: Seat["lateStatus"]) => {
   if (status === "late") return "bg-garnet text-bone";
@@ -15,15 +15,11 @@ const badgeForLate = (status: Seat["lateStatus"]) => {
 export const SeatTile = ({
   seat,
   onUpdate,
-  onPositionChange,
-  maxPositions = 6,
   readOnly = false,
   compact = false
 }: {
   seat: Seat;
   onUpdate: (seat: Seat) => void;
-  onPositionChange?: (position: number) => void;
-  maxPositions?: number;
   readOnly?: boolean;
   compact?: boolean;
 }) => {
@@ -142,29 +138,6 @@ export const SeatTile = ({
           })}
         </div>
       </div>
-      {onPositionChange && !readOnly && (
-        <div className="mt-3">
-          <label className="text-[10px] uppercase tracking-[0.2em] text-white/40">Position</label>
-          <div className="mt-2 flex gap-2 overflow-x-auto pb-1 subtle-scroll">
-            {Array.from({ length: maxPositions }, (_, index) => {
-              const position = index + 1;
-              const selected = position === seat.seatNumber;
-              return (
-                <button
-                  key={`pos-${position}`}
-                  type="button"
-                  onClick={() => onPositionChange(position)}
-                  className={`px-3 py-1 rounded-full border text-xs whitespace-nowrap ${
-                    selected ? "border-brass text-brass bg-brass/10" : "border-white/10 text-white/70"
-                  }`}
-                >
-                  Pos {position}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
         </>
       )}
     </div>

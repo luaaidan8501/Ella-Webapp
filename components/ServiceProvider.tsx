@@ -115,27 +115,22 @@ export const ServiceProvider = ({
   const audioRef = useRef<AudioContext | null>(null);
   const soundEnabledRef = useRef(false);
 
-  const playStatusSound = (status: ServiceStatus["status"]) => {
-    if (!audioRef.current) return;
-    const context = audioRef.current;
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    const frequencyMap: Record<ServiceStatus["status"], number> = {
-      STANDBY: 1200,
-      PLATE_UP: 1600,
-      PICK_UP: 2000,
-      SERVED: 1400
+  const speakStatus = (status: ServiceStatus["status"]) => {
+    if (typeof window === "undefined") return;
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    const phrases: Record<ServiceStatus["status"], string> = {
+      STANDBY: "standby",
+      PLATE_UP: "plate up",
+      PICK_UP: "pick up",
+      SERVED: "served"
     };
-    const now = context.currentTime;
-    oscillator.frequency.value = frequencyMap[status];
-    oscillator.type = "square";
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.exponentialRampToValueAtTime(0.45, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start(now);
-    oscillator.stop(now + 0.2);
+    const utterance = new SpeechSynthesisUtterance(phrases[status]);
+    utterance.rate = 1.05;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    synth.cancel();
+    synth.speak(utterance);
   };
 
   useEffect(() => {
@@ -195,7 +190,7 @@ export const ServiceProvider = ({
     socket.on("status_updated", (status, version) => {
       setState((prev) => (prev ? { ...applyStatusUpdate(prev, status), version } : prev));
       if (soundEnabledRef.current) {
-        playStatusSound(status.status);
+        speakStatus(status.status);
       }
     });
 

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ServiceProvider, useService } from "../../components/ServiceProvider";
 import { FiringBoardAll } from "../../components/FiringBoardAll";
 import { SeatSummary } from "../../components/SeatSummary";
-import { TableVisualizer } from "../../components/TableVisualizer";
 import { FiringBoard } from "../../components/FiringBoard";
 
 const BOHScreen = () => {
@@ -89,8 +88,7 @@ const BOHScreen = () => {
           onUpdateStatus={(status) => updateStatus({ status })}
           role="BOH"
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
-          showTableVisualization
-          showSeatDetails
+            showSeatDetails
           showTimeline={!collapseTimeline}
         />
       ) : (
@@ -111,15 +109,7 @@ const BOHScreen = () => {
                       role="BOH"
                       excludedCourses={reservation.excludedCourses ?? []}
                       showTimeline={!collapseTimeline}
-                      headerContent={
-                        <TableVisualizer
-                          reservation={reservation}
-                          table={table}
-                          statuses={state.statuses}
-                          variant="plain"
-                          showSeatDetails
-                        />
-                      }
+                      headerContent={null}
                     />
                   );
                 })}
